@@ -1,42 +1,37 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract StudentData {
-    
-    struct Student {
-        uint id;
+contract StudentRegister{
+    struct Student{
         string name;
-        uint age;
-        string course;
+        uint256 age;
+        uint256 rollno;
     }
 
-    Student[] public students;
+    Student[] private students;
 
-    // Mapping to track student IDs to ensure uniqueness
-    mapping(uint => bool) public studentExists;
+    event StudentAdded(string name,uint256 age,uint256 rollno);
+    event ReceiveEther(address indexed sender,uint256 value);
 
-    // Fallback function to handle any ETH sent to the contract
-    fallback() external payable {
-        // You can log a message or handle unexpected ETH transfers here
+    fallback() external payable{
+        emit ReceiveEther(msg.sender,msg.value);
     }
 
-    function addStudent(uint _id, string memory _name, uint _age, string memory _course) public {
-        require(!studentExists[_id], "Student ID already exists.");
-        students.push(Student(_id, _name, _age, _course));
-        studentExists[_id] = true;
+    function addStudent(string memory name,uint256 age,uint256 rollno) public{
+        students.push(Student(name,age,rollno));
+        emit StudentAdded(name, age, rollno);
     }
 
-    function getStudent(uint index) public view returns (uint, string memory, uint, string memory) {
-        require(index < students.length, "Invalid index.");
-        Student memory student = students[index];
-        return (student.id, student.name, student.age, student.course);
+    function getStudent(uint256 index) public view returns(string memory,uint256,uint256){
+        require(index < students.length,"Out of bound");
+        return (students[index].name,students[index].age,students[index].rollno);
     }
 
-    function getStudentCount() public view returns (uint) {
+    function getStudentCount() public view returns(uint256) {
         return students.length;
     }
-    
-    // Receive ETH
-    receive() external payable {}
 
+    receive() external payable {
+        emit ReceiveEther(msg.sender, msg.value);
+    }
 }
